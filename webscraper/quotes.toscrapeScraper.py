@@ -34,7 +34,7 @@ def scrapebooks():
     seenquote = seen()
     page_count = 1
     max_page = 10
-    target  = 'Douglas Adams'
+    target  = 'Albert Einstein'
     while url:
         try:
             headers = {

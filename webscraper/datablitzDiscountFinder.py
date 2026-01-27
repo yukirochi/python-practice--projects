@@ -4,10 +4,12 @@ from selenium.webdriver.common.by import By
 from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
 import time
-import requests # Still needed for Discord
+import requests
+from dotenv import load_dotenv
+import os
+load_dotenv()
 
-# WARNING: Treat this URL like a password. Don't share it publicly!
-discord_Webhook = 'https://discord.com/api/webhooks/1455196608135434478/PMTw0eUtNbolLx6plkQnXkNT-wtNZx0iqtc4V6LfxI9g533EX1H7uMfHiJQfyRUS_XXX'
+discord_Webhook = os.getenv("discordhook")
 
 def discord(target, price, link=None):
     if not discord_Webhook:
@@ -25,8 +27,12 @@ def discord(target, price, link=None):
 def scrape():
     #base_url = 'https://ecommerce.datablitz.com.ph/collections/games'
     base_url = input("Enter the Datablitz collection URL to scrape (e.g., games, consoles): ").strip()
+    target_price = input("Enter the target price (e.g., 1000): ").strip()
     page = 1
     
+    if '?page=' in base_url:
+        base_url = base_url.split('?page=')[0]
+
     # --- SELENIUM SETUP ---
     # We use Selenium just to fetch the page because requests is being blocked
     print("Launching Chrome...")
@@ -37,8 +43,8 @@ def scrape():
     
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
-    # Run loop for 5 pages
-    while page <= 5:
+    # Run loop for 10 pages
+    while page <= 10:
         current_url = f"{base_url}?page={page}"
         print(f"Scanning Page {page}: {current_url}")
         
@@ -58,7 +64,8 @@ def scrape():
             
             if not cont:
                 print("No products found. Checking selectors...")
-
+            
+            
             for i in cont:
                 price_tag = i.find('span', class_='money')
                 name_tag = i.find('a', class_='product-item__title')
@@ -77,7 +84,7 @@ def scrape():
                         
                         if 'Pre-Order' not in product_name:
                         # Alert if price > 500
-                            if price <= 1000:
+                            if price <= int(target_price):
                                 discord(product_name, raw_price, product_link)
                     except ValueError:
                         continue
